@@ -15,12 +15,14 @@ if [ "$#" -ne 2 ]; then
 fi
 
 
+failed=0
+
 # Get all the stems in suite-file
 suite_file=$1
 program=$2
 
 for stem in $(cat "$suite_file"); do
-    expect_file="${stem}.expect"
+    expect_file="tests/${stem}.expect"
 
     # Check for expect files (required)
     if [ ! -r "$expect_file" ]; then
@@ -29,8 +31,8 @@ for stem in $(cat "$suite_file"); do
     fi
 
     # Check for in_file and args_file (optional files)
-    in_file="${stem}.in"
-    args_file="${stem}.args"
+    in_file="tests/${stem}.in"
+    args_file="tests/${stem}.args"
 
     if [ -r "$args_file" ]; then
         args=$(cat "$args_file")
@@ -42,15 +44,16 @@ for stem in $(cat "$suite_file"); do
     tempfile=$(mktemp)
 
     if [ -r "$in_file" ]; then
-        "$program" $args < "$in_file" > "$tempfile"
+        "./$program" "$args" < "$in_file" > "$tempfile"
     else
-        "$program" $args > "$tempfile"
+        "./$program" "$args" > "$tempfile"
     fi
 
     # Check for differences with the expect file
     diff "$tempfile" "$expect_file" > /dev/null
 
-    if [ $? -ne 0]; then
+    if [ $? -ne 0 ]; then
+        failed=$((failed + 1))
         echo "Test Failed: $stem"
         echo "Args:"
         [ -r "$args_file" ] && cat "$args_file"
@@ -64,3 +67,7 @@ for stem in $(cat "$suite_file"); do
 
     rm $tempfile
 done
+
+if [ $failed -eq 0 ]; then
+    echo "All tests passed!"
+fi

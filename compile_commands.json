@@ -1,0 +1,54 @@
+[
+  {
+    "file": "src/spotify/oauth.cpp",
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++23",
+      "-g",
+      "-O0",
+      "-I/opt/homebrew/opt/openssl@3/include",
+      "-Iinclude",
+      "-pedantic-errors",
+      "-Wall",
+      "-Weffc++",
+      "-Wextra",
+      "-Wconversion",
+      "-Wsign-conversion",
+      "-Werror",
+      "-c",
+      "-MMD",
+      "-MP",
+      "src/spotify/oauth.cpp",
+      "-o",
+      "build/spotify/oauth.o"
+    ],
+    "directory": "/Users/ericvo/Lify",
+    "output": "build/spotify/oauth.o"
+  },
+  {
+    "file": "src/main.cpp",
+    "arguments": [
+      "/usr/bin/clang++",
+      "-std=c++23",
+      "-g",
+      "-O0",
+      "-I/opt/homebrew/opt/openssl@3/include",
+      "-Iinclude",
+      "-pedantic-errors",
+      "-Wall",
+      "-Weffc++",
+      "-Wextra",
+      "-Wconversion",
+      "-Wsign-conversion",
+      "-Werror",
+      "-c",
+      "-MMD",
+      "-MP",
+      "src/main.cpp",
+      "-o",
+      "build/main.o"
+    ],
+    "directory": "/Users/ericvo/Lify",
+    "output": "build/main.o"
+  }
+]

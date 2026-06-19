@@ -4,9 +4,13 @@ EXEC := lify
 # Complier to use
 CXX := clang++
 
+LIBFLAG := -I/opt/homebrew/opt/openssl@3/include
+LDFLAGS := -L/opt/homebrew/opt/openssl@3/lib
+LDLIBS := -lssl -lcrypto
+
 OPT := -O0
 CXXFLAGS := -std=c++23 -g ${OPT} \
-            -Iinclude \
+            $(LIBFLAG) -Iinclude  \
             -pedantic-errors -Wall -Weffc++ -Wextra \
             -Wconversion -Wsign-conversion -Werror
 
@@ -22,7 +26,7 @@ DEPENDS := $(OBJ:.o=.d)
 all: $(EXEC)
 
 ${EXEC}: $(OBJ)
-	$(CXX) $(OBJ) -o $@
+	$(CXX) $(OBJ) $(LDLIBS) $(LDFLAGS) -o $@
 
 build/%.o: src/%.cpp
 	@mkdir -p $(@D)
