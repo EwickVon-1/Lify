@@ -11,4 +11,5 @@ namespace crypto {
     std::array<BYTE, 32> sha256(std::string_view input);
     std::string toHex(const std::array<BYTE, 32>& digest);
     std::string base64_encode(std::span<const BYTE> input);
+    std::string urlEncode(std::string_view input);
 }

@@ -1,6 +1,7 @@
 #include <bit>
 #include <bitset>
 
+#include <cctype>
 #include <span>
 #include <cassert>
 #include <cstddef>
@@ -136,7 +137,7 @@ std::array<BYTE, 32> sha256(std::string_view input) {
 
             uint32_t a{hashValues[0]};
             uint32_t b{hashValues[1]};
-            uint32_t c{hashValues[2]};
+            uint32_t uc{hashValues[2]};
             uint32_t d{hashValues[3]};
             uint32_t e{hashValues[4]};
             uint32_t f{hashValues[5]};
@@ -149,22 +150,22 @@ std::array<BYTE, 32> sha256(std::string_view input) {
                 uint32_t temp1{ h + s1 + Ch + k[j] + w[j] };
 
                 uint32_t s0{ (std::rotr(a, 2)) ^ (std::rotr(a, 13)) ^ (std::rotr(a, 22)) };
-                uint32_t Maj{ (a & b) ^ (b & c) ^ (c & a) };
+                uint32_t Maj{ (a & b) ^ (b & uc) ^ (uc & a) };
                 uint32_t temp2{ s0 + Maj };
 
                 h = g;
                 g = f;
                 f = e;
                 e = d + temp1;
-                d = c;
-                c = b;
+                d = uc;
+                uc = b;
                 b = a;
                 a = temp1 + temp2;
             }
 
             hashValues[0] += a;
             hashValues[1] += b;
-            hashValues[2] += c;
+            hashValues[2] += uc;
             hashValues[3] += d;
             hashValues[4] += e;
             hashValues[5] += f;
@@ -186,8 +187,8 @@ std::array<BYTE, 32> sha256(std::string_view input) {
         std::stringstream oss;
         oss << std::hex << std::setfill('0');
 
-        for (unsigned char c : digest) {
-            oss << std::setw(2) << static_cast<int>(c);
+        for (unsigned char uc : digest) {
+            oss << std::setw(2) << static_cast<int>(uc);
         }
 
         return oss.str();
@@ -223,5 +224,27 @@ std::array<BYTE, 32> sha256(std::string_view input) {
             }
         }
         return output;
-    }    
+    }
+
+    std::string urlEncode(std::string_view input) {
+        std::ostringstream escaped;
+
+        escaped << std::hex << std::uppercase;
+        for (char c : input) {
+            BYTE uc = static_cast<BYTE>(c);
+
+            if (std::isalnum(uc) || 
+                    uc == '-' || uc == '_' || 
+                    uc == '.' || uc == '~') {
+                escaped << uc;
+            } else {
+                escaped << '%'
+                     << std::setw(2)
+                     << std::setfill('0')
+                     << static_cast<int>(uc);
+            }
+        }
+
+        return escaped.str();
+    }
 }
