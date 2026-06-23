@@ -4,9 +4,9 @@ EXEC := lify
 # Complier to use
 CXX := clang++
 
-LIBFLAG := -I/opt/homebrew/opt/openssl@3/include
-LDFLAGS := -L/opt/homebrew/opt/openssl@3/lib
-LDLIBS := -lssl -lcrypto
+LIBFLAG := -I/opt/homebrew/opt/openssl@3/include -I/opt/homebrew/opt/curl/include
+LDFLAGS := -L/opt/homebrew/opt/openssl@3/lib -L/opt/homebrew/opt/curl/lib
+LDLIBS := -lssl -lcrypto -lcurl
 
 OPT := -O0
 CXXFLAGS := -std=c++23 -g ${OPT} \
