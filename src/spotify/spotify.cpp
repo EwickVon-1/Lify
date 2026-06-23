@@ -1,4 +1,4 @@
-#include "Spotify/spotify.hpp"
+#include "spotify/spotify.hpp"
 #include <iostream>
 #include <curl/curl.h>
 

@@ -15,5 +15,5 @@ namespace auth {
                 std::string_view scope);
     };
 
-    std::string buildAuthUrl(const AuthRequest& request);
+    std::string buildAuthURL(const AuthRequest& request);
 } 

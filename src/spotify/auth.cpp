@@ -1,7 +1,7 @@
 #include <sstream>
 #include <string>
 #include <array>
-#include <Spotify/crypto.hpp>
+#include <spotify/crypto.hpp>
 #include <string_view>
 
 namespace auth {
