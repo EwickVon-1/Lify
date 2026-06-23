@@ -73,6 +73,12 @@ namespace crypto {
         }
     }
 
+    // randomStrGen(length) generates a cryptographical random string of size 
+    //  `length` using chracters permitted by RFC 7636 PKCE code verifiers such as:
+    //   'A-Z', 'a-z', '-._~'
+    // requires: length >= 43 && length <= 128
+    // throws: std::runtime_error if secure random byte generation fails.
+    // effects: None
     std::string randomStrGen(std::size_t length) {
         assert(length >= 43 && length <= 128);
         constexpr char charSet[]{ "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~" };
@@ -91,7 +97,13 @@ namespace crypto {
         return result;
     }
 
-std::array<BYTE, 32> sha256(std::string_view input) {
+
+    // sha256(input) computes the SHA-256 hash encoded array given a string input.
+    //  Returns the SHA-256 digest of input as a std::array<BYTE, 32> in big-endian order.
+    // requires: None
+    // throws: Any exception resulting from internal memory allocation failures.
+    // effects: None.
+    std::array<BYTE, 32> sha256(std::string_view input) {
         std::array<uint32_t, 8> hashValues{ 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 
             0xa54ff53a, 0x510e527f, 0x9b05688c,
             0x1f83d9ab, 0x5be0cd19 };
@@ -183,6 +195,7 @@ std::array<BYTE, 32> sha256(std::string_view input) {
         return digest;
     }
 
+    // toHex(digest) converts a digest message into a hexadecimal string
     std::string toHex(const std::array<BYTE, 32>& digest) {
         std::stringstream oss;
         oss << std::hex << std::setfill('0');
@@ -194,6 +207,12 @@ std::array<BYTE, 32> sha256(std::string_view input) {
         return oss.str();
     }
 
+    // base64_encode(input) encodes a BYTE sequnece in Base64URL format.
+    //  The encoding uses the URL-safe Base64 alphabet:
+    //  `A-Z`, `a-z`, `0-9`, `-`, `_`.
+    //  Padding characters '=' are not produced.
+    // requires: input.size() >= 0 (any valid std::span<const BYTE>).
+    // effects: None
     std::string base64_encode(std::span<const BYTE> input) {
         constexpr std::string_view BASE64_URL{"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" };
 
