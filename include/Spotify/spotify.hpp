@@ -4,7 +4,7 @@
 
 class Spotify {
 private: 
-    const auth::AuthRequest& m_authRequest;
+    [[maybe_unused]] const auth::AuthRequest& m_authRequest;
     std::string m_accessToken;
     
     std::string sendRequest(const std::string& method, const std::string& endpoint, const std::string& body = "");

@@ -14,7 +14,7 @@
 #include <sstream>
 
 #include <vector>
-#include "Spotify/crypto.hpp"
+#include "spotify/crypto.hpp"
 #include <openssl/rand.h>
 
 namespace crypto {
