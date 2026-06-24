@@ -1,9 +1,9 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <spotify/crypto.hpp>
-#include <spotify/spotify.hpp>
-#include <spotify/auth.hpp>
+#include <Spotify/crypto.hpp>
+#include <Spotify/spotify.hpp>
+#include <Spotify/auth.hpp>
 #include <fstream>
 #include <sstream>
 #include <string_view>
@@ -26,8 +26,21 @@ std::string getClientIDFromConfig() {
     throw std::runtime_error("could not find client_id in config.txt");
 }
 
+std::string extractJsonValue(std::string_view json, std::string_view key) {
+    std::string searchKey = "\"" + std::string(key) + "\":\"";
+    size_t startPos = json.find(searchKey);
+    if (startPos == std::string::npos) return "";
+
+    startPos += searchKey.length();
+    size_t endPos = json.find("\"", startPos);
+    if (endPos == std::string::npos) return "";
+
+    return std::string(json.substr(startPos, endPos - startPos));
+}
+
 void runSpotifyController() {
     using namespace std::string_view_literals;
+
     std::string clientID = getClientIDFromConfig();
     //use token to establish connection with api
     auth::AuthRequest request(
@@ -42,12 +55,33 @@ void runSpotifyController() {
     std::cout << "=-=-=-LOGIN-=-=-URL-=-=-=:\n\n" << loginURL << "\n\n";
 
     //capture token manually
-    std::cout << "Copy resulting token and paste it below: ";
-    std::string token;
-    std::cin >> token;
+    std::cout << "Copy resulting URL and paste it below: ";
+    std::string fullRedirectURL; 
+    std::cin >> fullRedirectURL;
 
+    size_t codePos = fullRedirectURL.find("code=");
+    if (codePos == std::string::npos) {
+        std::cout << "Error: URL not valid.\n";
+        return;
+    }
+
+    codePos += 5;
+    size_t ampPos = fullRedirectURL.find("&", codePos);
+    std::string authCode = (ampPos == std::string::npos) 
+        ? fullRedirectURL.substr(codePos)
+        : fullRedirectURL.substr(codePos, ampPos - codePos);
+
+    std::cout << "\nExchanging auth code for token... please wait...\n";
+
+    std::string rawJSONResponse = auth::swapCodeForToken(request, authCode);
+
+    std::string accessToken = extractJsonValue(rawJSONResponse, "access_token");
+    if (accessToken.empty()) {
+        std::cout << "Swap Error: " << rawJSONResponse << "\n";
+        return;
+    }
     //now with token, initialize engine clientside
-    Spotify spotify(request, token);
+    Spotify spotify(request, accessToken);
     std::cout << "\n-=-=-=-=-=-Lify Connected-=-=-=-=-=-\n";
     std::cout << "\nCOMMANDS AS FOLLOWS: play, pause, track <id>, back\n\n";
 

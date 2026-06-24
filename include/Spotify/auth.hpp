@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <string_view>
 
 namespace auth {
     struct AuthRequest {
@@ -16,4 +17,6 @@ namespace auth {
     };
 
     std::string buildAuthURL(const AuthRequest& request);
+
+    std::string swapCodeForToken(const AuthRequest& request, std::string_view authCode);
 } 

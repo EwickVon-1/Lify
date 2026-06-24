@@ -1,4 +1,4 @@
-#include "spotify/spotify.hpp"
+#include "Spotify/spotify.hpp"
 #include <iostream>
 #include <curl/curl.h>
 
@@ -12,39 +12,41 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
     return size * nmemb;
 }
 
-// implemention of network engine
+// implementation of network engine
 std::string Spotify::sendRequest(const std::string& method, const std::string& endpoint, const std::string& body) {
     CURL* curl = curl_easy_init();
     std::string responseString;
 
     if (curl) {
+        curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        
         std::string url = "https://api.spotify.com" + endpoint;
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method.c_str());
 
-        // now bring OAuth token to request header
         struct curl_slist* headers = nullptr;
         std::string authHeader = "Authorization: Bearer " + m_accessToken;
         headers = curl_slist_append(headers, authHeader.c_str());
-        headers = curl_slist_append(headers, "Content Type: application/json");
+        headers = curl_slist_append(headers, "Content-Type: application/json");
+
+        if (body.empty()) {
+            headers = curl_slist_append(headers, "Content-Length: 0");
+        }
+        
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
-        // now time for the body (payload)!!!
         if (!body.empty()) {
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
         }
 
-        // in case of errors:
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseString);
 
-        // we're ready to network!!
         CURLcode res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
             std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
         }
 
-        //clean-up
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
     }

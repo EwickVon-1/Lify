@@ -1,9 +1,20 @@
 #include <sstream>
+#include <iostream>
 #include <string>
 #include <array>
-#include <spotify/crypto.hpp>
+#include <Spotify/crypto.hpp>
 #include <string_view>
-#include "spotify/auth.hpp"
+#include <curl/curl.h>
+#include "Spotify/auth.hpp"
+
+namespace {
+    //saving json data
+    size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* userp) {
+        size_t totalSize = size * nmemb;
+        userp->append(static_cast<char*>(contents), totalSize);
+        return totalSize;
+    }
+}
 
 namespace auth {
     AuthRequest::AuthRequest(std::string_view client_id, 
@@ -34,4 +45,45 @@ namespace auth {
         return url.str();
 
     }
+
+    std::string swapCodeForToken(const AuthRequest& request, std::string_view authCode) {
+        CURL* curl = curl_easy_init();
+        std::string responseBuffer;
+
+        if (!curl) {
+            curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+            return "{\"error!!!!!\": \"failed to curl\"}";
+        }
+
+        curl_easy_setopt(curl, CURLOPT_URL, "https://accounts.spotify.com/api/token");
+
+        std::ostringstream payload;
+        payload << "client_id=" << request.client_id
+                << "&grant_type=authorization_code"
+                << "&code=" << authCode
+                << "&redirect_uri=" << crypto::urlEncode(request.redirect_uri)
+                << "&code_verifier=" << request.code_verifier;
+        
+        std::string postFields = payload.str();
+        std::cout << "\n[DEBUG]:\n" << postFields << "\n\n";
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postFields.c_str());
+
+        struct curl_slist* headers = nullptr;
+        headers = curl_slist_append(headers, "Content-Type: application/x-www-form-urlencoded");
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBuffer);
+
+        CURLcode res = curl_easy_perform(curl);
+        if (res != CURLE_OK) {
+            responseBuffer = "{\"error\": \"" + std::string(curl_easy_strerror(res)) + "\"}";
+        }
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        return responseBuffer;
+    }
 }
+
